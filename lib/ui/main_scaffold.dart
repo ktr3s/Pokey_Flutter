@@ -43,7 +43,7 @@ class MainScaffold extends StatelessWidget {
           left: 0,
           right: 0,
           bottom: 90,
-          child: Material(elevation: 8, child: MiniPlayer()),
+          child: MiniPlayer(),
         ),
       ],
     );

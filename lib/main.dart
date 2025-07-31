@@ -12,10 +12,11 @@ void main() async {
   // Iniciar AudioService
   final audioHandler = await AudioService.init(
     builder: () => AudioPlayerHandler(),
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.audio.channel',
-      androidNotificationChannelName: 'Audio Playback',
+    config: AudioServiceConfig(
+      androidNotificationChannelId: 'com.pokey_music.channel.audio',
+      androidNotificationChannelName: 'Reproducción de música',
       androidNotificationOngoing: true,
+      androidStopForegroundOnPause: true,
     ),
   );
 
@@ -30,6 +31,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // 👈 Oculta el banner de debug
+      themeMode: ThemeMode.system, // 👈 Sigue el modo del sistema
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blue,
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+      ),
       home: BlocProvider(
         create: (_) => PlayerBloc(audioHandler),
         child: const PlayerScreen(),

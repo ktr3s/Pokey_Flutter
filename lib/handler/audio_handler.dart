@@ -2,11 +2,20 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
-class AudioPlayerHandler extends BaseAudioHandler {
+class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
   final _player = AudioPlayer();
 
   AudioPlayerHandler() {
     _player.playbackEventStream.listen(_broadcastState);
+
+    playbackState.add(
+      PlaybackState(
+        controls: [],
+        androidCompactActionIndices: [],
+        playing: false,
+        processingState: AudioProcessingState.idle,
+      ),
+    );
   }
 
   Future<void> playMedia(
@@ -32,7 +41,6 @@ class AudioPlayerHandler extends BaseAudioHandler {
     await _player.setUrl(url);
     await _player.play();
   }
-
 
   void _broadcastState(PlaybackEvent event) {
     playbackState.add(
@@ -70,4 +78,9 @@ class AudioPlayerHandler extends BaseAudioHandler {
 
   @override
   Future<void> stop() => _player.stop();
+
+  @override
+  Future<void> onTaskRemoved() async {
+    await stop();
+  }
 }

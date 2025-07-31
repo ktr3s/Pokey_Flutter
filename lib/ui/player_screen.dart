@@ -1,8 +1,7 @@
-// lib/ui/player_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pokey_music/models/music_model.dart';
-import 'package:pokey_music/ui/main_scaffold.dart'; // 👈 nuevo
+import 'package:pokey_music/ui/main_scaffold.dart';
 import '../bloc/player_bloc.dart';
 import '../repository/music_repository.dart';
 
@@ -27,6 +26,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<PlayerBloc>();
+    final theme = Theme.of(context);
 
     return MainScaffold(
       currentIndex: 0,
@@ -35,7 +35,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           future: futureMusic,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: Text("Cargando música..."));
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (snapshot.hasError) {
@@ -46,26 +46,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
               return const Center(child: Text("No hay música disponible"));
             }
 
-            final musicList = snapshot.data!;
-            final filteredList = musicList
+            final musicList = snapshot.data!
                 .where((track) => track.fileUrl != null)
                 .toList();
 
             return ListView.builder(
-              padding: const EdgeInsets.only(
-                bottom: 100,
-              ), // espacio para el miniplayer
-              itemCount: filteredList.length,
+              padding: const EdgeInsets.only(bottom: 100, top: 16),
+              itemCount: musicList.length,
               itemBuilder: (context, index) {
-                final track = filteredList[index];
+                final track = musicList[index];
                 final url = track.fileUrl?.startsWith("http") == true
                     ? track.fileUrl
                     : "$baseUrl${track.fileUrl ?? ''}";
 
-                return ListTile(
-                  leading: Image.network(track.cover ?? ''),
-                  title: Text(track.title ?? ''),
-                  subtitle: Text(track.artist ?? ''),
+                return InkWell(
                   onTap: () {
                     bloc.add(
                       PlayTrack(
@@ -77,6 +71,61 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       ),
                     );
                   },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            track.cover ?? '',
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  color: Colors.grey.shade800,
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                track.title ?? 'Sin título',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                track.artist ?? 'Desconocido',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey.shade400,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.more_vert, color: Colors.grey),
+                      ],
+                    ),
+                  ),
                 );
               },
             );
