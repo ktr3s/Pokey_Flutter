@@ -1,4 +1,3 @@
-// lib/bloc/player_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pokey_music/handler/audio_handler.dart';
 
@@ -20,8 +19,9 @@ class PlayTrack extends PlayerEvent {
   });
 }
 
-
 class PauseTrack extends PlayerEvent {}
+
+class ResumeTrack extends PlayerEvent {} // 👈 Agregado
 
 class StopTrack extends PlayerEvent {}
 
@@ -39,7 +39,9 @@ class PlayerBloc extends Bloc<PlayerEvent, void> {
         cover: event.cover,
       );
     });
+
     on<PauseTrack>((event, emit) => handler.pause());
+    on<ResumeTrack>((event, emit) => handler.play()); // 👈 Manejador
     on<StopTrack>((event, emit) => handler.stop());
   }
 }

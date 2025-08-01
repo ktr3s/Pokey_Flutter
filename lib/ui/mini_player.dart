@@ -1,7 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:ui'; // para BackdropFilter
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pokey_music/bloc/player_bloc.dart';
 
 class MiniPlayer extends StatefulWidget {
@@ -11,7 +11,7 @@ class MiniPlayer extends StatefulWidget {
   State<MiniPlayer> createState() => _MiniPlayerState();
 }
 
-class _MiniPlayerState extends State<MiniPlayer> {
+class _MiniPlayerState extends State<MiniPlayer> with TickerProviderStateMixin {
   bool isExpanded = false;
 
   @override
@@ -38,21 +38,23 @@ class _MiniPlayerState extends State<MiniPlayer> {
                 onTap: () {
                   setState(() => isExpanded = !isExpanded);
                 },
-                child: AbsorbPointer(
-                  absorbing: false, // Previene interacción con widgets detrás
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: AnimatedContainer(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: AnimatedSize(
                           duration: const Duration(milliseconds: 300),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
+                          curve: Curves.easeInOut,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -112,17 +114,18 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                       final bloc = context.read<PlayerBloc>();
                                       if (isPlaying) {
                                         bloc.add(PauseTrack());
-                                      } 
+                                      } else {
+                                        bloc.add(ResumeTrack());
+                                      }
                                     },
                                   ),
                                 ],
                               ),
 
-                              // Solo se muestra si está expandido
+                              // Animación de expansión
                               if (isExpanded) ...[
                                 const SizedBox(height: 8),
 
-                                // Fila 2: barra de progreso animada
                                 TweenAnimationBuilder<double>(
                                   tween: Tween<double>(
                                     begin: 0,
@@ -192,7 +195,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 ),
                                 const SizedBox(height: 8),
 
-                                // Fila 3: controles
+                                // Controles extra
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -214,6 +217,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                         final bloc = context.read<PlayerBloc>();
                                         if (isPlaying) {
                                           bloc.add(PauseTrack());
+                                        } else {
+                                          bloc.add(ResumeTrack());
                                         }
                                       },
                                     ),
